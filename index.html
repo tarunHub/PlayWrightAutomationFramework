@@ -1,0 +1,2219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playwright Testground — Every Feature, One Page</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0d;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #222834;
+    --border2: #2d3548;
+    --text: #e2e8f0;
+    --muted: #5a6580;
+    --accent: #00d4aa;
+    --accent2: #7c3aed;
+    --accent3: #f59e0b;
+    --accent4: #ef4444;
+    --accent5: #3b82f6;
+    --green: #10b981;
+    --pink: #ec4899;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-display: 'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .site-header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,11,13,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+  }
+  .site-logo {
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .site-logo span { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 8px; }
+  .nav-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+  .nav-pill {
+    font-family: var(--font-mono); font-size: 11px;
+    padding: 4px 10px; border-radius: 4px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--muted); cursor: pointer; text-decoration: none;
+    transition: all 0.15s;
+  }
+  .nav-pill:hover { color: var(--accent); border-color: var(--accent); background: rgba(0,212,170,0.05); }
+
+  /* LAYOUT */
+  .main { max-width: 1400px; margin: 0 auto; padding: 0 24px 80px; }
+  .hero {
+    padding: 60px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 800; line-height: 1.1;
+    color: var(--text); letter-spacing: -1px;
+  }
+  .hero h1 em { color: var(--accent); font-style: normal; }
+  .hero p { color: var(--muted); margin-top: 12px; font-size: 13px; max-width: 520px; }
+  .badge-row { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+  .badge {
+    font-size: 10px; padding: 3px 10px; border-radius: 20px;
+    border: 1px solid; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .badge-green { border-color: var(--green); color: var(--green); background: rgba(16,185,129,0.08); }
+  .badge-purple { border-color: var(--accent2); color: var(--accent2); background: rgba(124,58,237,0.08); }
+  .badge-amber { border-color: var(--accent3); color: var(--accent3); background: rgba(245,158,11,0.08); }
+  .badge-blue { border-color: var(--accent5); color: var(--accent5); background: rgba(59,130,246,0.08); }
+  .badge-pink { border-color: var(--pink); color: var(--pink); background: rgba(236,72,153,0.08); }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 56px;
+    animation: fadeUp 0.4s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--muted); min-width: 28px;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 700;
+    color: var(--text);
+  }
+  .section-tag {
+    font-size: 10px; padding: 2px 8px;
+    border-radius: 3px; background: var(--surface2);
+    border: 1px solid var(--border); color: var(--muted);
+    margin-left: auto;
+  }
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .card-label {
+    font-size: 10px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 12px; display: block;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-mono); font-size: 12px;
+    padding: 8px 16px; border-radius: 5px; cursor: pointer;
+    border: 1px solid; font-weight: 600; transition: all 0.15s;
+    text-decoration: none; white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #000; }
+  .btn-primary:hover { background: #00f0c0; box-shadow: 0 0 16px rgba(0,212,170,0.3); }
+  .btn-outline { background: transparent; border-color: var(--border2); color: var(--text); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: transparent; border-color: var(--accent4); color: var(--accent4); }
+  .btn-danger:hover { background: rgba(239,68,68,0.1); }
+  .btn-purple { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+  .btn-purple:hover { background: #6d28d9; }
+  .btn-amber { background: transparent; border-color: var(--accent3); color: var(--accent3); }
+  .btn-amber:hover { background: rgba(245,158,11,0.1); }
+  .btn-blue { background: var(--accent5); border-color: var(--accent5); color: #fff; }
+  .btn-blue:hover { background: #2563eb; }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+  .btn:disabled, .btn[disabled] {
+    opacity: 0.35; cursor: not-allowed; pointer-events: none;
+  }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  /* FORM ELEMENTS */
+  .form-group { margin-bottom: 14px; }
+  .form-label {
+    display: block; font-size: 11px; color: var(--muted);
+    margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="number"], input[type="search"], input[type="tel"],
+  input[type="url"], input[type="date"], input[type="time"],
+  input[type="datetime-local"], input[type="month"], input[type="week"],
+  textarea, select {
+    width: 100%; background: var(--surface2);
+    border: 1px solid var(--border2); border-radius: 5px;
+    padding: 8px 12px; color: var(--text);
+    font-family: var(--font-mono); font-size: 12px;
+    outline: none; transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,212,170,0.12);
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  textarea { resize: vertical; min-height: 80px; }
+  select option { background: var(--surface2); }
+  input[type="range"] {
+    width: 100%; accent-color: var(--accent);
+    padding: 0; height: 4px; cursor: pointer;
+  }
+  input[type="color"] {
+    width: 48px; height: 36px; padding: 2px;
+    border-radius: 5px; cursor: pointer;
+  }
+  input[type="checkbox"], input[type="radio"] {
+    accent-color: var(--accent);
+    width: 14px; height: 14px; cursor: pointer;
+  }
+  input[type="file"] { color: var(--muted); font-size: 12px; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .checkbox-row label { cursor: pointer; color: var(--text); font-size: 12px; }
+
+  /* OUTPUT BOX */
+  .output-box {
+    background: #060709;
+    border: 1px solid var(--border);
+    border-radius: 5px; padding: 10px 14px;
+    font-size: 11px; color: var(--accent);
+    font-family: var(--font-mono); min-height: 36px;
+    margin-top: 10px; word-break: break-all;
+  }
+  .output-box.log { color: var(--muted); }
+  .output-box .ev { color: var(--accent3); }
+  .output-box .ok { color: var(--green); }
+  .output-box .err { color: var(--accent4); }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead tr { background: var(--surface2); }
+  th { padding: 10px 12px; text-align: left; color: var(--muted); font-weight: 600;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  tr.selected td { background: rgba(0,212,170,0.06); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .tab-btn {
+    font-family: var(--font-mono); font-size: 12px;
+    padding: 8px 16px; background: none; border: none;
+    border-bottom: 2px solid transparent; color: var(--muted);
+    cursor: pointer; transition: all 0.15s; margin-bottom: -1px;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover { color: var(--text); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; animation: fadeUp 0.2s ease; }
+
+  /* ACCORDION */
+  .accordion-item { border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px; overflow: hidden; }
+  .accordion-header {
+    width: 100%; background: var(--surface2); border: none;
+    padding: 12px 16px; color: var(--text); font-family: var(--font-mono);
+    font-size: 12px; text-align: left; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: background 0.15s;
+  }
+  .accordion-header:hover { background: var(--surface); }
+  .accordion-header .arrow { transition: transform 0.25s; color: var(--muted); }
+  .accordion-item.open .accordion-header .arrow { transform: rotate(180deg); }
+  .accordion-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0 16px; color: var(--muted); font-size: 12px;
+  }
+  .accordion-item.open .accordion-body { max-height: 200px; padding: 12px 16px; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 999;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 10px; padding: 28px; max-width: 440px; width: 90%;
+    animation: modalIn 0.2s ease;
+  }
+  @keyframes modalIn { from { transform: scale(0.95) translateY(-8px); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal h3 { font-family: var(--font-display); font-size: 18px; margin-bottom: 10px; }
+  .modal p { color: var(--muted); font-size: 12px; margin-bottom: 20px; }
+
+  /* TOOLTIP */
+  [data-tooltip] { position: relative; cursor: default; }
+  [data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute; bottom: calc(100% + 8px); left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    background: var(--surface2); border: 1px solid var(--border2);
+    color: var(--text); font-size: 11px; padding: 5px 10px;
+    border-radius: 4px; white-space: nowrap; pointer-events: none;
+    opacity: 0; transition: all 0.15s; transform-origin: bottom center;
+  }
+  [data-tooltip]:hover::after { opacity: 1; transform: translateX(-50%) scale(1); }
+
+  /* DRAG & DROP */
+  .drag-source {
+    padding: 10px 14px; border-radius: 6px; cursor: grab;
+    background: var(--surface2); border: 1px solid var(--border2);
+    font-size: 12px; transition: all 0.15s; display: inline-block;
+    user-select: none;
+  }
+  .drag-source:hover { border-color: var(--accent); }
+  .drag-source.dragging { opacity: 0.4; cursor: grabbing; }
+  .drop-zone {
+    min-height: 80px; border-radius: 6px;
+    border: 2px dashed var(--border2); padding: 16px;
+    display: flex; flex-direction: column; gap: 8px;
+    transition: all 0.15s; align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .drop-zone.dragover { border-color: var(--accent); background: rgba(0,212,170,0.04); }
+  .drop-zone .placeholder { color: var(--muted); font-size: 11px; width: 100%; text-align: center; }
+
+  /* LOADING STATES */
+  .spinner {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--border2); border-top-color: var(--accent);
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .skeleton {
+    height: 14px; border-radius: 4px;
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--surface) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    margin-bottom: 8px;
+  }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .progress-bar {
+    width: 100%; height: 6px; background: var(--surface2);
+    border-radius: 3px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent); border-radius: 3px;
+    transition: width 0.4s ease; width: 0%;
+  }
+
+  /* NOTIFICATION */
+  .toast-container {
+    position: fixed; top: 70px; right: 20px; z-index: 999;
+    display: flex; flex-direction: column; gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px; padding: 10px 16px;
+    font-size: 12px; pointer-events: all;
+    animation: toastIn 0.2s ease; min-width: 220px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .toast.error { border-left-color: var(--accent4); }
+  .toast.warning { border-left-color: var(--accent3); }
+  @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes toastOut { to { transform: translateX(100%); opacity: 0; } }
+
+  /* HOVER ZONE */
+  .hover-zone {
+    padding: 20px; border-radius: 6px;
+    border: 1px solid var(--border2); text-align: center;
+    transition: all 0.2s; cursor: crosshair;
+    color: var(--muted); font-size: 12px;
+  }
+  .hover-zone:hover { background: rgba(0,212,170,0.05); border-color: var(--accent); color: var(--accent); }
+
+  /* SHADOW DOM */
+  #shadow-host {
+    border: 1px dashed var(--accent2);
+    border-radius: 6px; padding: 16px;
+    min-height: 60px;
+  }
+
+  /* CANVAS */
+  #draw-canvas {
+    background: #060709; border: 1px solid var(--border2);
+    border-radius: 6px; cursor: crosshair; display: block;
+    touch-action: none;
+  }
+
+  /* IFRAME */
+  .iframe-wrap {
+    border: 1px solid var(--border2); border-radius: 6px;
+    overflow: hidden;
+  }
+  .iframe-wrap iframe {
+    display: block; width: 100%; border: none;
+  }
+
+  /* SCROLL */
+  .scroll-container {
+    height: 200px; overflow-y: auto; overflow-x: hidden;
+    border: 1px solid var(--border2); border-radius: 6px;
+    scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+  }
+  .scroll-item {
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    font-size: 12px; transition: background 0.1s;
+  }
+  .scroll-item:hover { background: rgba(255,255,255,0.02); }
+  .scroll-item:last-child { border-bottom: none; }
+
+  /* VIRTUAL LIST */
+  .virtual-list {
+    height: 220px; overflow-y: auto;
+    border: 1px solid var(--border2); border-radius: 6px;
+    scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+  }
+  .virtual-list-inner { position: relative; }
+  .virtual-list-item {
+    position: absolute; width: 100%;
+    padding: 10px 16px; font-size: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between;
+  }
+
+  /* VISIBILITY TESTS */
+  .hidden-element { display: none; }
+  .invisible-element { visibility: hidden; }
+  .opacity-zero { opacity: 0; }
+  .off-screen { position: absolute; left: -9999px; }
+  .overflow-hidden-parent { overflow: hidden; height: 0; }
+
+  /* MULTI-SELECT */
+  select[multiple] { min-height: 100px; }
+
+  /* CONTENTEDITABLE */
+  [contenteditable] {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 5px; padding: 8px 12px; min-height: 60px;
+    font-size: 12px; outline: none; transition: border-color 0.15s;
+  }
+  [contenteditable]:focus { border-color: var(--accent); }
+  [contenteditable]:empty::before { content: attr(data-placeholder); color: var(--muted); }
+
+  /* STATUS DOT */
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot-red { background: var(--accent4); }
+  .dot-amber { background: var(--accent3); }
+
+  /* NETWORK PANEL */
+  .net-log {
+    background: #060709; border: 1px solid var(--border);
+    border-radius: 6px; height: 160px; overflow-y: auto;
+    padding: 10px 14px; font-size: 11px;
+    scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+  }
+  .net-entry { margin-bottom: 4px; }
+  .net-entry .method { color: var(--accent3); font-weight: 600; }
+  .net-entry .url { color: var(--accent5); }
+  .net-entry .status { color: var(--green); }
+  .net-entry .status.err { color: var(--accent4); }
+
+  /* COOKIE / STORAGE */
+  .kv-pair { display: flex; gap: 8px; margin-bottom: 6px; align-items: center; }
+  .kv-key { color: var(--accent); flex-shrink: 0; font-size: 11px; }
+  .kv-val { color: var(--muted); font-size: 11px; word-break: break-all; }
+
+  /* ANIMATION SHOWCASE */
+  .anim-box {
+    width: 48px; height: 48px; border-radius: 6px;
+    background: var(--accent2); display: flex; align-items: center;
+    justify-content: center; font-size: 20px;
+  }
+  .anim-spin { animation: spin 1s linear infinite; }
+  .anim-pulse { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity:1; } 50% { transform: scale(1.15); opacity:0.7; } }
+  .anim-bounce { animation: bounce 0.8s ease infinite; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+  .anim-shake { animation: shake 0.5s ease infinite; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  .anim-blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
+  /* RESPONSIVE TABLE WRAPPER */
+  .table-wrap { overflow-x: auto; }
+
+  /* DETAIL / SUMMARY */
+  details {
+    border: 1px solid var(--border2); border-radius: 6px;
+    margin-bottom: 8px; overflow: hidden;
+  }
+  summary {
+    padding: 10px 14px; cursor: pointer;
+    background: var(--surface2); font-size: 12px; color: var(--text);
+    list-style: none; display: flex; justify-content: space-between;
+  }
+  summary::-webkit-details-marker { display: none; }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+  details .details-body { padding: 12px 14px; color: var(--muted); font-size: 12px; }
+
+  /* RANGE OUTPUT */
+  .range-row { display: flex; align-items: center; gap: 12px; }
+  .range-val { min-width: 30px; color: var(--accent); font-size: 12px; text-align: right; }
+
+  /* INFINITE SCROLL */
+  #infinite-list {
+    height: 240px; overflow-y: auto;
+    border: 1px solid var(--border2); border-radius: 6px;
+    scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+  }
+  .inf-item {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    font-size: 12px; display: flex; justify-content: space-between; align-items: center;
+  }
+  #inf-loader { padding: 12px; text-align: center; color: var(--muted); font-size: 11px; }
+
+  /* WEBSOCKET MOCK */
+  .ws-log {
+    height: 120px; overflow-y: auto;
+    background: #060709; border: 1px solid var(--border);
+    border-radius: 5px; padding: 10px 14px;
+    font-size: 11px;
+    scrollbar-width: thin; scrollbar-color: var(--border2) transparent;
+  }
+  .ws-msg { margin-bottom: 3px; }
+  .ws-msg.sent { color: var(--accent5); }
+  .ws-msg.recv { color: var(--green); }
+  .ws-msg.sys { color: var(--muted); }
+
+  /* GEOLOCATION */
+  #geo-output { color: var(--muted); font-size: 12px; }
+
+  /* COUNTER */
+  #counter-val {
+    font-family: var(--font-display); font-size: 48px; font-weight: 800;
+    color: var(--accent); text-align: center; line-height: 1;
+    padding: 20px 0;
+  }
+
+  /* CONTEXT MENU */
+  .context-zone {
+    padding: 20px; border-radius: 6px;
+    border: 1px dashed var(--border2); text-align: center;
+    font-size: 12px; color: var(--muted); cursor: context-menu;
+    transition: all 0.15s;
+  }
+  .context-zone:hover { border-color: var(--accent2); color: var(--accent2); }
+  #custom-ctx {
+    position: fixed; display: none; z-index: 998;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 6px; min-width: 160px; padding: 4px 0;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  #custom-ctx .ctx-item {
+    padding: 8px 16px; font-size: 12px; cursor: pointer; color: var(--text);
+    transition: background 0.1s;
+  }
+  #custom-ctx .ctx-item:hover { background: var(--surface2); color: var(--accent); }
+  #custom-ctx .ctx-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* INTERSECTION OBSERVER */
+  .lazy-card {
+    height: 80px; border-radius: 6px;
+    border: 1px solid var(--border); padding: 16px;
+    font-size: 12px; margin-bottom: 8px;
+    opacity: 0; transform: translateY(20px);
+    transition: all 0.4s ease;
+  }
+  .lazy-card.visible {
+    opacity: 1; transform: translateY(0);
+    background: var(--surface);
+  }
+  .lazy-card .lazy-label { color: var(--muted); font-size: 10px; text-transform: uppercase; }
+  .lazy-card .lazy-val { color: var(--accent); font-size: 14px; font-weight: 600; margin-top: 4px; }
+
+  /* KEYBOARD */
+  .key-display {
+    background: #060709; border: 1px solid var(--border);
+    border-radius: 5px; padding: 8px 14px; font-size: 12px;
+    color: var(--accent3); min-height: 36px;
+    margin-top: 8px; text-align: center;
+  }
+
+  /* MEDIA */
+  audio, video { width: 100%; border-radius: 6px; }
+
+  /* RESIZE */
+  .resizable {
+    resize: both; overflow: auto;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 6px; min-width: 100px; min-height: 60px;
+    padding: 12px; font-size: 11px; color: var(--muted);
+    width: 200px; height: 80px; max-width: 100%;
+  }
+
+  /* SECTION DIVIDER */
+  .divider {
+    border: none; height: 1px; background: var(--border);
+    margin: 40px 0;
+  }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- CUSTOM CONTEXT MENU -->
+<div id="custom-ctx">
+  <div class="ctx-item" onclick="ctxAction('Inspect')">🔍 Inspect</div>
+  <div class="ctx-item" onclick="ctxAction('Copy')">📋 Copy</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxAction('Custom Action 1')">⚡ Custom Action 1</div>
+  <div class="ctx-item" onclick="ctxAction('Custom Action 2')">🎯 Custom Action 2</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal1">
+  <div class="modal">
+    <h3>Test Modal</h3>
+    <p>This is a modal dialog. Playwright can interact with elements inside it using locators. Try the role locator: <code>page.getByRole('dialog')</code></p>
+    <div class="form-group">
+      <label class="form-label">Modal Input</label>
+      <input type="text" id="modal-input" placeholder="Type inside modal..." data-testid="modal-input">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="modal-confirm" onclick="closeModal('modal1'); toast('Modal confirmed!', 'success')">Confirm</button>
+      <button class="btn btn-outline" onclick="closeModal('modal1')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal2">
+  <div class="modal">
+    <h3>Alert-Style Modal</h3>
+    <p>Used to test Playwright's dialog handling — <code>page.on('dialog', ...)</code></p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="closeModal('modal2')">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="site-logo">Playwright<em style="color:var(--accent)">.</em>Lab <span>v1.0 — Full Test Coverage</span></div>
+  <nav class="nav-pills">
+    <a class="nav-pill" href="#sec-nav">Nav</a>
+    <a class="nav-pill" href="#sec-clicks">Clicks</a>
+    <a class="nav-pill" href="#sec-forms">Forms</a>
+    <a class="nav-pill" href="#sec-keyboard">Keys</a>
+    <a class="nav-pill" href="#sec-mouse">Mouse</a>
+    <a class="nav-pill" href="#sec-dialogs">Dialogs</a>
+    <a class="nav-pill" href="#sec-frames">Frames</a>
+    <a class="nav-pill" href="#sec-wait">Wait</a>
+    <a class="nav-pill" href="#sec-network">Network</a>
+    <a class="nav-pill" href="#sec-storage">Storage</a>
+    <a class="nav-pill" href="#sec-scroll">Scroll</a>
+    <a class="nav-pill" href="#sec-visibility">Visibility</a>
+    <a class="nav-pill" href="#sec-dom">DOM</a>
+    <a class="nav-pill" href="#sec-misc">Misc</a>
+  </nav>
+</header>
+
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>The <em>Playwright</em><br>Testground</h1>
+    <p>Every interactive element, state, and browser behavior in one place. Built to give full Playwright test coverage — locators, actions, assertions, network, storage, and more.</p>
+    <div class="badge-row">
+      <span class="badge badge-green">✓ Navigation</span>
+      <span class="badge badge-purple">✓ Forms</span>
+      <span class="badge badge-amber">✓ Dialogs</span>
+      <span class="badge badge-blue">✓ Network</span>
+      <span class="badge badge-pink">✓ Shadow DOM</span>
+      <span class="badge badge-green">✓ Frames</span>
+      <span class="badge badge-purple">✓ Storage</span>
+      <span class="badge badge-amber">✓ Scroll</span>
+      <span class="badge badge-blue">✓ Drag & Drop</span>
+      <span class="badge badge-pink">✓ Keyboard</span>
+      <span class="badge badge-green">✓ Mouse Events</span>
+      <span class="badge badge-purple">✓ Animations</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       01 — NAVIGATION
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-nav">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Navigation & Routing</h2>
+      <span class="section-tag">page.goto · page.goBack · page.reload</span>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <span class="card-label">Anchor Navigation</span>
+        <div class="btn-row">
+          <a href="#sec-forms" class="btn btn-outline btn-sm" id="link-to-forms">→ Forms Section</a>
+          <a href="#sec-network" class="btn btn-outline btn-sm" id="link-to-network">→ Network</a>
+          <a href="#" class="btn btn-outline btn-sm" id="link-top">↑ Top</a>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-label">External Links</span>
+        <div class="btn-row">
+          <a href="https://playwright.dev" target="_blank" class="btn btn-outline btn-sm" id="link-playwright" rel="noopener">playwright.dev ↗</a>
+          <a href="https://example.com" target="_blank" class="btn btn-outline btn-sm" id="link-example" rel="noopener">example.com ↗</a>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-label">URL & History</span>
+        <div class="btn-row">
+          <button class="btn btn-outline btn-sm" onclick="history.pushState({p:1}, '', '?page=1'); showOutput('nav-out','pushState → ?page=1')">pushState</button>
+          <button class="btn btn-outline btn-sm" onclick="history.back(); showOutput('nav-out','history.back()')">Back</button>
+          <button class="btn btn-outline btn-sm" onclick="history.forward(); showOutput('nav-out','history.forward()')">Forward</button>
+          <button class="btn btn-outline btn-sm" onclick="location.reload()">Reload</button>
+        </div>
+        <div class="output-box" id="nav-out">—</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       02 — CLICKS
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-clicks">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Click Interactions</h2>
+      <span class="section-tag">click · dblclick · rightclick · force</span>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <span class="card-label">Single Click Variants</span>
+        <div class="btn-row" style="flex-direction:column; align-items:flex-start;">
+          <button id="btn-click" class="btn btn-primary" onclick="logClick('click-out','left-click')">Left Click Me</button>
+          <button id="btn-middle" class="btn btn-outline" onmousedown="e=>e.button===1&&logClick('click-out','middle-click')">Middle Click Target</button>
+          <button id="btn-shift-click" class="btn btn-outline" onclick="logClick('click-out', event.shiftKey?'shift+click':'regular-click')">Shift+Click Me</button>
+          <button id="btn-ctrl-click" class="btn btn-outline" onclick="logClick('click-out', event.ctrlKey||event.metaKey?'ctrl+click':'regular-click')">Ctrl+Click Me</button>
+        </div>
+        <div class="output-box" id="click-out">—</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Double Click</span>
+        <button id="btn-dblclick" class="btn btn-amber" style="width:100%;justify-content:center;" ondblclick="logClick('dblclick-out','double-click fired!')">Double-Click Me</button>
+        <div class="output-box" id="dblclick-out">—</div>
+        <span class="card-label" style="margin-top:14px;">Right Click</span>
+        <div class="context-zone" id="right-click-zone" oncontextmenu="handleRightClick(event)">Right-click this zone for context menu</div>
+        <div class="output-box" id="rclick-out">—</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Click Counter</span>
+        <div id="counter-val" data-testid="counter">0</div>
+        <div class="btn-row" style="justify-content:center;">
+          <button id="btn-dec" class="btn btn-danger" onclick="updateCounter(-1)">−</button>
+          <button id="btn-reset" class="btn btn-outline" onclick="updateCounter(0, true)">Reset</button>
+          <button id="btn-inc" class="btn btn-primary" onclick="updateCounter(1)">+</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       03 — FORMS
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-forms">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Forms & Inputs</h2>
+      <span class="section-tag">fill · type · check · selectOption · setInputFiles</span>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <span class="card-label">Text Inputs</span>
+        <div class="form-group">
+          <label class="form-label">Text</label>
+          <input type="text" id="inp-text" name="text" placeholder="Enter text..." data-testid="inp-text" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="inp-email" name="email" placeholder="email@example.com" data-testid="inp-email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="inp-password" name="password" placeholder="••••••••" data-testid="inp-password">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Number</label>
+          <input type="number" id="inp-number" name="qty" placeholder="0" min="0" max="100" data-testid="inp-number">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Search</label>
+          <input type="search" id="inp-search" name="q" placeholder="Search..." data-testid="inp-search">
+        </div>
+        <div class="form-group">
+          <label class="form-label">URL</label>
+          <input type="url" id="inp-url" placeholder="https://..." data-testid="inp-url">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tel</label>
+          <input type="tel" id="inp-tel" placeholder="+1 555 000 0000" data-testid="inp-tel">
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-label">Date & Time Inputs</span>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" id="inp-date" data-testid="inp-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time</label>
+          <input type="time" id="inp-time" data-testid="inp-time">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Datetime Local</label>
+          <input type="datetime-local" id="inp-datetime" data-testid="inp-datetime">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Month</label>
+          <input type="month" id="inp-month" data-testid="inp-month">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Week</label>
+          <input type="week" id="inp-week" data-testid="inp-week">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Color Picker</label>
+          <input type="color" id="inp-color" value="#00d4aa" data-testid="inp-color">
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-top:16px;">
+      <div class="card">
+        <span class="card-label">Textarea & Range</span>
+        <div class="form-group">
+          <label class="form-label">Textarea</label>
+          <textarea id="inp-textarea" placeholder="Multi-line input..." rows="4" data-testid="inp-textarea"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Range Slider</label>
+          <div class="range-row">
+            <input type="range" id="inp-range" min="0" max="100" value="42" data-testid="inp-range" oninput="document.getElementById('range-disp').textContent=this.value">
+            <span class="range-val" id="range-disp">42</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ContentEditable</label>
+          <div contenteditable="true" id="contenteditable" data-placeholder="Type here (contenteditable)…" data-testid="contenteditable"></div>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-label">Select & Checkboxes</span>
+        <div class="form-group">
+          <label class="form-label">Single Select</label>
+          <select id="sel-single" data-testid="sel-single">
+            <option value="">— choose —</option>
+            <option value="playwright">Playwright</option>
+            <option value="cypress">Cypress</option>
+            <option value="selenium">Selenium</option>
+            <option value="puppeteer">Puppeteer</option>
+            <option value="webdriverio">WebdriverIO</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Multi Select</label>
+          <select id="sel-multi" multiple data-testid="sel-multi">
+            <option value="chrome">Chrome</option>
+            <option value="firefox">Firefox</option>
+            <option value="webkit">WebKit</option>
+            <option value="edge">Edge</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Checkboxes</label>
+          <div class="checkbox-row"><input type="checkbox" id="chk1" data-testid="chk1"><label for="chk1">Option Alpha</label></div>
+          <div class="checkbox-row"><input type="checkbox" id="chk2" data-testid="chk2" checked><label for="chk2">Option Beta (pre-checked)</label></div>
+          <div class="checkbox-row"><input type="checkbox" id="chk3" data-testid="chk3" disabled><label for="chk3">Option Gamma (disabled)</label></div>
+          <div class="checkbox-row"><input type="checkbox" id="chk-indeterminate" data-testid="chk-indeterminate"><label for="chk-indeterminate">Indeterminate State</label></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Radio Group</label>
+          <div class="checkbox-row"><input type="radio" name="radio" id="rad1" value="a" data-testid="rad1"><label for="rad1">Choice A</label></div>
+          <div class="checkbox-row"><input type="radio" name="radio" id="rad2" value="b" data-testid="rad2"><label for="rad2">Choice B</label></div>
+          <div class="checkbox-row"><input type="radio" name="radio" id="rad3" value="c" data-testid="rad3" checked><label for="rad3">Choice C (default)</label></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-top:16px;">
+      <div class="card">
+        <span class="card-label">File Upload</span>
+        <div class="form-group">
+          <label class="form-label">Single File</label>
+          <input type="file" id="file-single" data-testid="file-single" onchange="showOutput('file-out', 'File: ' + this.files[0]?.name)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Multiple Files</label>
+          <input type="file" id="file-multi" multiple data-testid="file-multi" onchange="showOutput('file-out', Array.from(this.files).map(f=>f.name).join(', '))">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Accept Images</label>
+          <input type="file" id="file-image" accept="image/*" data-testid="file-image" onchange="showOutput('file-out', 'Image: ' + this.files[0]?.name)">
+        </div>
+        <div class="output-box" id="file-out">—</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Form Submission</span>
+        <form id="main-form" data-testid="main-form" onsubmit="handleFormSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input type="text" id="form-username" name="username" placeholder="username" required data-testid="form-username" autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="form-pass" name="password" placeholder="password" required data-testid="form-password" autocomplete="current-password">
+          </div>
+          <div class="btn-row">
+            <button type="submit" id="form-submit" class="btn btn-primary" data-testid="form-submit">Submit</button>
+            <button type="reset" id="form-reset" class="btn btn-outline" data-testid="form-reset">Reset</button>
+          </div>
+          <div class="output-box" id="form-out">—</div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <span class="card-label">Disabled & Readonly Variants</span>
+      <div class="grid-3">
+        <div class="form-group">
+          <label class="form-label">Disabled Input</label>
+          <input type="text" value="Cannot edit this" disabled data-testid="inp-disabled">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Readonly Input</label>
+          <input type="text" value="Readonly value" readonly data-testid="inp-readonly">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Disabled Button</label>
+          <button class="btn btn-primary" disabled data-testid="btn-disabled" style="width:100%">Disabled Button</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Disabled Select</label>
+          <select disabled data-testid="sel-disabled"><option>Disabled Option</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Disabled Textarea</label>
+          <textarea disabled rows="2" data-testid="textarea-disabled">Cannot edit</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Required (empty)</label>
+          <input type="text" required placeholder="Required field" data-testid="inp-required">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       04 — KEYBOARD
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-keyboard">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Keyboard Events</h2>
+      <span class="section-tag">press · type · keyboard.down · keyboard.up</span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <span class="card-label">Key Logger — Focus and type</span>
+        <input type="text" id="key-input" placeholder="Focus me and type any keys..." data-testid="key-input" autocomplete="off">
+        <div class="key-display" id="key-display">Waiting for keypress…</div>
+        <div class="output-box" id="key-log" style="height:80px;overflow-y:auto;">—</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Keyboard Shortcuts</span>
+        <div id="shortcut-zone" tabindex="0" style="padding:12px;border:1px solid var(--border2);border-radius:6px;outline:none;font-size:12px;color:var(--muted);min-height:60px;" data-testid="shortcut-zone">
+          Click here, then try: Ctrl+A, Ctrl+C, Ctrl+Z, Enter, Escape, Tab, Arrow keys
+        </div>
+        <div class="output-box" id="shortcut-out">—</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Special Keys Test Area</span>
+        <textarea id="special-keys-area" rows="4" placeholder="Tab / Enter / Backspace / Delete / ArrowUp / ArrowDown" data-testid="special-keys-area"></textarea>
+        <div class="output-box" id="special-key-out">—</div>
+      </div>
+      <div class="card">
+        <span class="card-label">IME / Composition</span>
+        <input type="text" id="ime-input" placeholder="Type CJK / emoji input here..." data-testid="ime-input" autocomplete="off">
+        <div id="ime-output" class="output-box">—</div>
+        <div style="margin-top:8px;color:var(--muted);font-size:11px;">Events: compositionstart, compositionupdate, compositionend</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       05 — MOUSE EVENTS
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-mouse">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">Mouse Events & Drag</h2>
+      <span class="section-tag">hover · move · drag · wheel</span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <span class="card-label">Hover Detection</span>
+        <div class="hover-zone" id="hover-zone" data-testid="hover-zone"
+          onmouseenter="showOutput('hover-out','mouseenter fired')"
+          onmouseleave="showOutput('hover-out','mouseleave fired')"
+          onmousemove="document.getElementById('hover-out').textContent='x:'+event.offsetX+' y:'+event.offsetY">
+          Move your mouse over this zone
+        </div>
+        <div class="output-box" id="hover-out">—</div>
+
+        <span class="card-label" style="margin-top:14px;">Wheel Event</span>
+        <div style="padding:16px;border:1px solid var(--border2);border-radius:6px;text-align:center;font-size:12px;color:var(--muted);cursor:ns-resize;user-select:none;"
+          onwheel="handleWheel(event)" data-testid="wheel-zone" id="wheel-zone">
+          Scroll wheel here
+        </div>
+        <div class="output-box" id="wheel-out">—</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Drag & Drop</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+          <div class="drag-source" draggable="true" id="drag-a" data-testid="drag-a"
+            ondragstart="handleDragStart(event,'Item A')"
+            ondragend="handleDragEnd(event)">🔵 Item A</div>
+          <div class="drag-source" draggable="true" id="drag-b" data-testid="drag-b"
+            ondragstart="handleDragStart(event,'Item B')"
+            ondragend="handleDragEnd(event)">🟣 Item B</div>
+          <div class="drag-source" draggable="true" id="drag-c" data-testid="drag-c"
+            ondragstart="handleDragStart(event,'Item C')"
+            ondragend="handleDragEnd(event)">🟡 Item C</div>
+        </div>
+        <div class="drop-zone" id="drop-zone" data-testid="drop-zone"
+          ondragover="e=>{e.preventDefault();this.classList.add('dragover')}"
+          ondragleave="this.classList.remove('dragover')"
+          ondrop="handleDrop(event)">
+          <span class="placeholder">Drop items here</span>
+        </div>
+        <div class="output-box" id="drag-out">—</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       06 — DIALOGS
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-dialogs">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">Dialogs & Alerts</h2>
+      <span class="section-tag">page.on('dialog') · alert · confirm · prompt · beforeunload</span>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <span class="card-label">Native Browser Dialogs</span>
+        <div class="btn-row" style="flex-direction:column;gap:8px;">
+          <button id="btn-alert" class="btn btn-amber" data-testid="btn-alert" onclick="showAlert()">window.alert()</button>
+          <button id="btn-confirm" class="btn btn-outline" data-testid="btn-confirm" onclick="showConfirm()">window.confirm()</button>
+          <button id="btn-prompt" class="btn btn-outline" data-testid="btn-prompt" onclick="showPrompt()">window.prompt()</button>
+        </div>
+        <div class="output-box" id="dialog-out">—</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Custom Modal Dialog</span>
+        <div class="btn-row" style="flex-direction:column;gap:8px;">
+          <button id="btn-open-modal" class="btn btn-purple" data-testid="btn-open-modal" onclick="openModal('modal1')">Open Test Modal</button>
+          <button id="btn-open-modal2" class="btn btn-outline" data-testid="btn-open-modal2" onclick="openModal('modal2')">Open Alert Modal</button>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-label">Notification Toasts</span>
+        <div class="btn-row" style="flex-direction:column;gap:8px;">
+          <button id="btn-toast-success" class="btn btn-outline" data-testid="btn-toast-success" onclick="toast('Operation succeeded!','success')">Success Toast</button>
+          <button id="btn-toast-error" class="btn btn-danger" data-testid="btn-toast-error" onclick="toast('Something went wrong!','error')">Error Toast</button>
+          <button id="btn-toast-warn" class="btn btn-amber" data-testid="btn-toast-warn" onclick="toast('Warning: check this','warning')">Warning Toast</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       07 — FRAMES
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-frames">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2 class="section-title">Frames & iFrames</h2>
+      <span class="section-tag">page.frame · frameLocator · contentFrame</span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <span class="card-label">Named iFrame</span>
+        <div class="iframe-wrap">
+          <iframe
+            name="test-frame"
+            id="test-frame"
+            data-testid="test-frame"
+            title="Test Frame"
+            height="180"
+            srcdoc='<!DOCTYPE html><html><head><style>body{font-family:monospace;background:#0a0b0d;color:#e2e8f0;padding:16px;font-size:12px;} input{background:#181c24;border:1px solid #2d3548;color:#e2e8f0;padding:6px 10px;border-radius:4px;font-family:monospace;font-size:12px;outline:none;width:100%;margin-bottom:10px;} button{background:#00d4aa;border:none;color:#000;padding:7px 14px;border-radius:4px;font-family:monospace;font-size:12px;cursor:pointer;font-weight:700;} #out{color:#00d4aa;margin-top:8px;font-size:11px;}</style></head><body><p style="margin-bottom:10px;color:#5a6580;">Inside iframe — use frameLocator()</p><input id="frame-input" placeholder="Type in iframe..." data-testid="frame-input"><button onclick="document.getElementById(&apos;out&apos;).textContent=&apos;Frame btn clicked! Value: &apos;+document.getElementById(&apos;frame-input&apos;).value" id="frame-btn" data-testid="frame-btn">Submit</button><div id="out">—</div></body></html>'
+          ></iframe>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-label">Nested iFrame</span>
+        <div class="iframe-wrap">
+          <iframe
+            name="outer-frame"
+            id="outer-frame"
+            data-testid="outer-frame"
+            title="Outer Frame"
+            height="180"
+            srcdoc='<!DOCTYPE html><html><head><style>body{font-family:monospace;background:#0a0b0d;color:#e2e8f0;padding:10px;font-size:12px;} iframe{border:1px dashed #7c3aed;border-radius:4px;}</style></head><body><p style="color:#5a6580;margin-bottom:8px;">Outer frame</p><iframe name="inner-frame" id="inner-frame" data-testid="inner-frame" width="100%" height="100" srcdoc="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;style&gt;body{font-family:monospace;background:%230a0b0d;color:%23e2e8f0;padding:10px;font-size:11px;}input{background:%23181c24;border:1px solid %232d3548;color:%23e2e8f0;padding:5px 8px;border-radius:4px;font-family:monospace;font-size:11px;outline:none;width:100%;}%23nb{color:%237c3aed;margin-top:6px;font-size:10px;}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;p style=&apos;color:%235a6580;&apos;&gt;Nested inner frame&lt;/p&gt;&lt;input id=&apos;nested-input&apos; data-testid=&apos;nested-input&apos; placeholder=&apos;Nested input...&apos;&gt;&lt;div id=&apos;nb&apos;&gt;frameLocator(&apos;outer&apos;).frameLocator(&apos;inner&apos;)&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;"></iframe></body></html>'
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       08 — WAIT & ASYNC
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-wait">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2 class="section-title">Waiting & Async States</h2>
+      <span class="section-tag">waitForSelector · waitForResponse · waitFor · toBeVisible</span>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <span class="card-label">Delayed Element Appearance</span>
+        <button id="btn-reveal" class="btn btn-blue" data-testid="btn-reveal" onclick="revealDelayed()">Reveal after 2s</button>
+        <div id="delayed-element" data-testid="delayed-element" style="display:none;margin-top:10px;" class="output-box" style="color:var(--green);">✓ Element appeared!</div>
+        <div id="reveal-spinner" style="display:none;margin-top:10px;"><div class="spinner"></div></div>
+      </div>
+      <div class="card">
+        <span class="card-label">Progress / Loading Bar</span>
+        <button id="btn-progress" class="btn btn-outline" data-testid="btn-progress" onclick="startProgress()">Start Progress</button>
+        <div style="margin-top:12px;">
+          <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+          <div id="prog-val" style="color:var(--muted);font-size:11px;margin-top:4px;text-align:right;">0%</div>
+        </div>
+        <div id="progress-done" data-testid="progress-done" style="display:none;" class="output-box">✓ Complete</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Skeleton Loader</span>
+        <button id="btn-skeleton" class="btn btn-outline" data-testid="btn-skeleton" onclick="showSkeleton()">Simulate Load</button>
+        <div id="skeleton-container" style="margin-top:12px;display:none;">
+          <div class="skeleton" style="width:70%"></div>
+          <div class="skeleton" style="width:100%"></div>
+          <div class="skeleton" style="width:55%"></div>
+        </div>
+        <div id="skeleton-content" data-testid="skeleton-content" style="display:none;margin-top:12px;">
+          <div style="color:var(--text);font-size:12px;"><strong>Loaded Content</strong></div>
+          <div style="color:var(--muted);font-size:11px;margin-top:4px;">Data fetched and rendered after delay.</div>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-label">Element State Changes</span>
+        <button id="btn-toggle-state" class="btn btn-outline" data-testid="btn-toggle-state" onclick="toggleButtonState()">Toggle Disabled</button>
+        <button id="state-target-btn" class="btn btn-primary btn-sm" data-testid="state-target-btn" style="margin-top:10px;width:100%;justify-content:center;">Target Button</button>
+        <div class="output-box" id="state-out">—</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Dynamic Text Change</span>
+        <button id="btn-text-change" class="btn btn-outline" data-testid="btn-text-change" onclick="changeText()">Change Text</button>
+        <div id="dynamic-text" data-testid="dynamic-text" style="margin-top:10px;padding:10px;border:1px solid var(--border2);border-radius:5px;font-size:12px;color:var(--accent);">Initial text content</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Retry-able Condition</span>
+        <button id="btn-random" class="btn btn-outline" data-testid="btn-random" onclick="randomSuccess()">50% chance success</button>
+        <div id="success-box" data-testid="success-box" style="display:none;" class="output-box"><span class="ok">✓ SUCCESS</span></div>
+        <div id="fail-box" data-testid="fail-box" style="display:none;" class="output-box"><span class="err">✗ FAILED — retry</span></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       09 — NETWORK
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-network">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2 class="section-title">Network & Fetch Interception</h2>
+      <span class="section-tag">route · waitForResponse · request · response</span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <span class="card-label">HTTP Requests (Interceptable)</span>
+        <div class="btn-row" style="flex-wrap:wrap;">
+          <button id="btn-get" class="btn btn-outline btn-sm" data-testid="btn-get" onclick="makeRequest('GET','https://jsonplaceholder.typicode.com/posts/1')">GET /posts/1</button>
+          <button id="btn-post" class="btn btn-outline btn-sm" data-testid="btn-post" onclick="makeRequest('POST','https://jsonplaceholder.typicode.com/posts',{title:'test',body:'hello',userId:1})">POST /posts</button>
+          <button id="btn-put" class="btn btn-outline btn-sm" data-testid="btn-put" onclick="makeRequest('PUT','https://jsonplaceholder.typicode.com/posts/1',{title:'updated'})">PUT /posts/1</button>
+          <button id="btn-delete" class="btn btn-danger btn-sm" data-testid="btn-delete" onclick="makeRequest('DELETE','https://jsonplaceholder.typicode.com/posts/1')">DELETE /posts/1</button>
+          <button id="btn-fail" class="btn btn-danger btn-sm" data-testid="btn-fail" onclick="makeRequest('GET','https://httpstat.us/500')">500 Error</button>
+          <button id="btn-404" class="btn btn-outline btn-sm" data-testid="btn-404" onclick="makeRequest('GET','https://jsonplaceholder.typicode.com/nonexistent')">404 Response</button>
+        </div>
+        <div class="net-log" id="net-log" data-testid="net-log">
+          <div class="net-entry" style="color:var(--muted)">Request log will appear here…</div>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-label">Response Data</span>
+        <div id="response-data" data-testid="response-data" style="background:#060709;border:1px solid var(--border);border-radius:5px;padding:10px 14px;height:200px;overflow-y:auto;font-size:11px;color:var(--muted);">Make a request to see response…</div>
+
+        <span class="card-label" style="margin-top:14px;">Mock / Stub Pattern</span>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Use <code style="color:var(--accent)">page.route()</code> to intercept these:</div>
+        <div class="btn-row">
+          <button id="btn-mockable" class="btn btn-outline btn-sm" data-testid="btn-mockable" onclick="makeMockableRequest()">Mockable Endpoint</button>
+          <span id="mock-indicator" data-testid="mock-indicator" style="font-size:11px;color:var(--muted);"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <span class="card-label">WebSocket Simulation</span>
+      <div class="two-col">
+        <div>
+          <div class="ws-log" id="ws-log" data-testid="ws-log">
+            <div class="ws-msg sys">WebSocket simulator — not yet connected</div>
+          </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button id="ws-connect" class="btn btn-green btn-sm" data-testid="ws-connect" onclick="wsConnect()" style="background:var(--green);border-color:var(--green);color:#000;">Connect</button>
+            <button id="ws-disconnect" class="btn btn-danger btn-sm" data-testid="ws-disconnect" onclick="wsDisconnect()" disabled>Disconnect</button>
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label class="form-label">Send Message</label>
+            <input type="text" id="ws-msg-input" placeholder="Type a message..." data-testid="ws-msg-input" autocomplete="off">
+          </div>
+          <button id="ws-send" class="btn btn-blue btn-sm" data-testid="ws-send" onclick="wsSend()" disabled>Send</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       10 — STORAGE
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-storage">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2 class="section-title">Storage & Cookies</h2>
+      <span class="section-tag">localStorage · sessionStorage · cookies · indexedDB</span>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <span class="card-label">localStorage</span>
+        <div class="form-group">
+          <input type="text" id="ls-key" placeholder="key" style="margin-bottom:6px;" data-testid="ls-key">
+          <input type="text" id="ls-val" placeholder="value" data-testid="ls-val">
+        </div>
+        <div class="btn-row">
+          <button id="ls-set" class="btn btn-primary btn-sm" data-testid="ls-set" onclick="lsSet()">Set</button>
+          <button id="ls-get" class="btn btn-outline btn-sm" data-testid="ls-get" onclick="lsGet()">Get</button>
+          <button id="ls-clear" class="btn btn-danger btn-sm" data-testid="ls-clear" onclick="lsClear()">Clear All</button>
+        </div>
+        <div class="output-box" id="ls-out">—</div>
+        <div id="ls-display" style="margin-top:8px;"></div>
+      </div>
+      <div class="card">
+        <span class="card-label">sessionStorage</span>
+        <div class="form-group">
+          <input type="text" id="ss-key" placeholder="key" style="margin-bottom:6px;" data-testid="ss-key">
+          <input type="text" id="ss-val" placeholder="value" data-testid="ss-val">
+        </div>
+        <div class="btn-row">
+          <button id="ss-set" class="btn btn-primary btn-sm" data-testid="ss-set" onclick="ssSet()">Set</button>
+          <button id="ss-get" class="btn btn-outline btn-sm" data-testid="ss-get" onclick="ssGet()">Get</button>
+          <button id="ss-clear" class="btn btn-danger btn-sm" data-testid="ss-clear" onclick="ssClear()">Clear All</button>
+        </div>
+        <div class="output-box" id="ss-out">—</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Document Cookies</span>
+        <div class="form-group">
+          <input type="text" id="ck-name" placeholder="name" style="margin-bottom:6px;" data-testid="ck-name">
+          <input type="text" id="ck-val" placeholder="value" data-testid="ck-val">
+        </div>
+        <div class="btn-row">
+          <button id="ck-set" class="btn btn-primary btn-sm" data-testid="ck-set" onclick="ckSet()">Set Cookie</button>
+          <button id="ck-read" class="btn btn-outline btn-sm" data-testid="ck-read" onclick="ckRead()">Read Cookies</button>
+          <button id="ck-delete" class="btn btn-danger btn-sm" data-testid="ck-delete" onclick="ckDelete()">Delete</button>
+        </div>
+        <div class="output-box" id="ck-out">—</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       11 — SCROLL
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-scroll">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <h2 class="section-title">Scrolling</h2>
+      <span class="section-tag">scrollIntoView · mouse.wheel · evaluate · IntersectionObserver</span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <span class="card-label">Scrollable Container</span>
+        <div class="scroll-container" id="scroll-container" data-testid="scroll-container">
+          <!-- Generated dynamically -->
+        </div>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('scroll-container').scrollTop=0">↑ Top</button>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('scroll-container').scrollTop=999">↓ Bottom</button>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('scroll-item-15').scrollIntoView({behavior:'smooth'})">→ Item 15</button>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-label">Infinite Scroll</span>
+        <div id="infinite-list" data-testid="infinite-list">
+          <!-- populated by JS -->
+        </div>
+        <div id="inf-loader">— scroll down to load more —</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <span class="card-label">Intersection Observer — Lazy Cards</span>
+      <div id="lazy-cards-container" data-testid="lazy-cards-container">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       12 — VISIBILITY & DOM STATE
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-visibility">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <h2 class="section-title">Visibility & DOM State</h2>
+      <span class="section-tag">toBeVisible · toBeHidden · isVisible · isEnabled</span>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <span class="card-label">Visibility States</span>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div data-testid="el-visible" style="padding:8px 12px;background:var(--surface2);border-radius:4px;font-size:12px;">✓ display:block (visible)</div>
+          <div data-testid="el-hidden-display" class="hidden-element" style="padding:8px 12px;background:rgba(239,68,68,0.1);border-radius:4px;font-size:12px;">✗ display:none</div>
+          <div data-testid="el-hidden-visibility" class="invisible-element" style="padding:8px 12px;background:rgba(245,158,11,0.1);border-radius:4px;font-size:12px;">visibility:hidden</div>
+          <div data-testid="el-opacity-zero" class="opacity-zero" style="padding:8px 12px;background:rgba(59,130,246,0.1);border-radius:4px;font-size:12px;">opacity:0</div>
+          <div data-testid="el-off-screen" class="off-screen">off-screen (left:-9999px)</div>
+        </div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn btn-outline btn-sm" onclick="document.querySelector('[data-testid=el-hidden-display]').style.display='block'">Show hidden</button>
+          <button class="btn btn-outline btn-sm" onclick="document.querySelector('[data-testid=el-hidden-display]').style.display='none'">Hide it</button>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-label">Focusable / Aria States</span>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">
+          <button class="btn btn-outline btn-sm" id="focusable-btn" data-testid="focusable-btn" onfocus="showOutput('focus-out','focus event on button')" onblur="showOutput('focus-out','blur event on button')">Focus Me (Tab)</button>
+          <a href="#" id="focusable-link" data-testid="focusable-link" style="color:var(--accent5);font-size:12px;" onfocus="showOutput('focus-out','focus on link')">Focusable Link</a>
+          <input type="text" placeholder="Focus me too" data-testid="focusable-input" onfocus="showOutput('focus-out','focus on input')" onblur="showOutput('focus-out','blur on input')">
+          <div role="button" tabindex="0" id="aria-button" data-testid="aria-button" style="padding:7px 12px;border:1px solid var(--border2);border-radius:4px;cursor:pointer;" aria-label="Accessible Button" onclick="showOutput('focus-out','aria button clicked')">aria role=button</div>
+          <div role="checkbox" tabindex="0" id="aria-checkbox" data-testid="aria-checkbox" aria-checked="false" style="padding:7px 12px;border:1px solid var(--border2);border-radius:4px;cursor:pointer;" onclick="toggleAria(this)">aria checkbox: unchecked</div>
+        </div>
+        <div class="output-box" id="focus-out">—</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Toggle Visibility Controls</span>
+        <div id="toggle-target" data-testid="toggle-target" style="padding:14px;background:var(--surface2);border-radius:5px;margin-bottom:10px;font-size:12px;">
+          <span class="dot dot-green"></span> I am currently visible
+        </div>
+        <div class="btn-row" style="flex-wrap:wrap;gap:6px;">
+          <button class="btn btn-sm btn-outline" onclick="toggleVis('toggle-target','display')">Toggle display</button>
+          <button class="btn btn-sm btn-outline" onclick="toggleVis('toggle-target','visibility')">Toggle visibility</button>
+          <button class="btn btn-sm btn-outline" onclick="toggleVis('toggle-target','opacity')">Toggle opacity</button>
+        </div>
+        <div class="output-box" id="vis-out">—</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       13 — DOM FEATURES
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-dom">
+    <div class="section-header">
+      <span class="section-num">13</span>
+      <h2 class="section-title">DOM Features & Components</h2>
+      <span class="section-tag">tables · tabs · accordion · details · shadow DOM · canvas</span>
+    </div>
+
+    <!-- TABS -->
+    <div class="card" style="margin-bottom:16px;">
+      <span class="card-label">Tab Component</span>
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" role="tab" data-testid="tab-overview" onclick="switchTab('tab-overview','tabs1')">Overview</button>
+        <button class="tab-btn" role="tab" data-testid="tab-details" onclick="switchTab('tab-details','tabs1')">Details</button>
+        <button class="tab-btn" role="tab" data-testid="tab-settings" onclick="switchTab('tab-settings','tabs1')">Settings</button>
+        <button class="tab-btn" role="tab" data-testid="tab-logs" onclick="switchTab('tab-logs','tabs1')">Logs</button>
+      </div>
+      <div id="tabs1">
+        <div class="tab-pane active" data-tab="tab-overview" data-testid="tabpanel-overview">
+          <div style="color:var(--muted);font-size:12px;">📊 Overview panel — <span style="color:var(--accent)">currently active</span>. Playwright can use <code>getByRole('tab', {name:'Overview'})</code> to target this tab.</div>
+        </div>
+        <div class="tab-pane" data-tab="tab-details" data-testid="tabpanel-details">
+          <div style="color:var(--muted);font-size:12px;">📋 Details panel — test tab switching with <code>page.click('[data-testid=tab-details]')</code></div>
+        </div>
+        <div class="tab-pane" data-tab="tab-settings" data-testid="tabpanel-settings">
+          <div style="color:var(--muted);font-size:12px;">⚙️ Settings panel — assert that <code>tabpanel-settings</code> is visible after click.</div>
+        </div>
+        <div class="tab-pane" data-tab="tab-logs" data-testid="tabpanel-logs">
+          <div style="color:var(--muted);font-size:12px;font-family:var(--font-mono);">2024-01-01 INFO  App started<br>2024-01-01 DEBUG Request received<br>2024-01-01 INFO  Response sent 200</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCORDION -->
+    <div class="card" style="margin-bottom:16px;">
+      <span class="card-label">Accordion Component</span>
+      <div class="accordion-item" id="acc1" data-testid="acc-item-1">
+        <button class="accordion-header" onclick="toggleAccordion('acc1')">Section 1 — Introduction <span class="arrow">▼</span></button>
+        <div class="accordion-body">This is the content of section 1. Playwright can test accordion open/close state using <code>toBeVisible()</code> on the body.</div>
+      </div>
+      <div class="accordion-item open" id="acc2" data-testid="acc-item-2">
+        <button class="accordion-header" onclick="toggleAccordion('acc2')">Section 2 — Features (open by default) <span class="arrow">▼</span></button>
+        <div class="accordion-body">Section 2 is open by default. Use <code>toHaveClass('open')</code> to assert its state. Click to collapse it.</div>
+      </div>
+      <div class="accordion-item" id="acc3" data-testid="acc-item-3">
+        <button class="accordion-header" onclick="toggleAccordion('acc3')">Section 3 — Advanced <span class="arrow">▼</span></button>
+        <div class="accordion-body">Advanced content. Playwright can scroll this into view if needed: <code>locator.scrollIntoViewIfNeeded()</code></div>
+      </div>
+    </div>
+
+    <!-- DETAILS/SUMMARY -->
+    <div class="card" style="margin-bottom:16px;">
+      <span class="card-label">Native &lt;details&gt; / &lt;summary&gt;</span>
+      <details data-testid="details-1">
+        <summary>Click to expand — native HTML details<span>›</span></summary>
+        <div class="details-body">This uses the native <code>&lt;details&gt;</code> element. Playwright can click the summary to expand it.</div>
+      </details>
+      <details open data-testid="details-2">
+        <summary>Pre-expanded details<span>›</span></summary>
+        <div class="details-body">This detail is pre-opened with the <code>open</code> attribute. Use <code>toHaveAttribute('open')</code> to assert.</div>
+      </details>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card" style="margin-bottom:16px;">
+      <span class="card-label">Data Table</span>
+      <div class="table-wrap">
+        <table id="data-table" data-testid="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Test Name</th>
+              <th>Status</th>
+              <th>Duration</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- populated by JS -->
+          </tbody>
+        </table>
+      </div>
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn btn-outline btn-sm" data-testid="btn-add-row" onclick="addTableRow()">+ Add Row</button>
+        <button class="btn btn-danger btn-sm" data-testid="btn-clear-table" onclick="clearTable()">Clear Table</button>
+      </div>
+    </div>
+
+    <!-- SHADOW DOM -->
+    <div class="card" style="margin-bottom:16px;">
+      <span class="card-label">Shadow DOM — use <code>page.locator()</code> piercing</span>
+      <div id="shadow-host" data-testid="shadow-host"></div>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="card">
+      <span class="card-label">Canvas Drawing — mouse.move / mouse.down / mouse.up</span>
+      <div class="btn-row" style="margin-bottom:8px;">
+        <button id="btn-clear-canvas" class="btn btn-outline btn-sm" data-testid="btn-clear-canvas" onclick="clearCanvas()">Clear</button>
+        <input type="color" id="canvas-color" value="#00d4aa" style="width:36px;height:28px;" title="Pick color">
+        <span style="font-size:11px;color:var(--muted);margin-left:4px;">Click & drag on canvas</span>
+      </div>
+      <canvas id="draw-canvas" data-testid="draw-canvas" width="600" height="160"></canvas>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       14 — LOCATOR STRATEGIES
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-locators">
+    <div class="section-header">
+      <span class="section-num">14</span>
+      <h2 class="section-title">Locator Strategies</h2>
+      <span class="section-tag">getByRole · getByText · getByLabel · getByTestId · getByPlaceholder · css · xpath</span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <span class="card-label">Role-Based Locators</span>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button role="button" aria-label="Submit the form" id="role-submit" data-testid="role-submit" class="btn btn-primary btn-sm">Submit Form</button>
+          <a href="#" role="link" aria-label="Read the documentation" id="role-link" data-testid="role-link" style="color:var(--accent5);font-size:12px;">Read the documentation</a>
+          <input type="text" aria-label="Search products" id="role-search" data-testid="role-search" placeholder="Search products…">
+          <div role="alert" id="role-alert" data-testid="role-alert" aria-live="polite" style="padding:8px 12px;background:rgba(239,68,68,0.1);border:1px solid var(--accent4);border-radius:4px;font-size:11px;color:var(--accent4);">Alert: This is an ARIA alert region</div>
+          <div role="status" id="role-status" data-testid="role-status" aria-live="polite" style="padding:8px 12px;background:rgba(16,185,129,0.08);border:1px solid var(--green);border-radius:4px;font-size:11px;color:var(--green);">Status: operation completed</div>
+          <nav role="navigation" aria-label="Test navigation" data-testid="role-nav" style="font-size:12px;">
+            <a href="#" style="color:var(--accent5);margin-right:12px;">Home</a>
+            <a href="#" style="color:var(--accent5);margin-right:12px;">About</a>
+            <a href="#" style="color:var(--accent5);">Contact</a>
+          </nav>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-label">Label / Placeholder / Text Locators</span>
+        <div class="form-group">
+          <label for="labeled-input" class="form-label">Email Address</label>
+          <input type="email" id="labeled-input" data-testid="labeled-input" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label for="labeled-input-2" class="form-label">Phone Number</label>
+          <input type="tel" id="labeled-input-2" data-testid="labeled-input-2" placeholder="+1 (555) 000-0000">
+        </div>
+        <div class="form-group">
+          <label for="labeled-select" class="form-label">Country</label>
+          <select id="labeled-select" data-testid="labeled-select">
+            <option value="">Select country…</option>
+            <option value="ca">Canada</option>
+            <option value="us">United States</option>
+            <option value="uk">United Kingdom</option>
+          </select>
+        </div>
+        <div>
+          <p id="text-locator-p" data-testid="text-para" style="font-size:12px;color:var(--muted);padding:10px;border:1px solid var(--border2);border-radius:4px;">
+            Use <code style="color:var(--accent)">page.getByText('unique text')</code> to find this paragraph by its visible content.
+          </p>
+          <p id="partial-text-p" style="font-size:12px;color:var(--muted);padding:10px;border:1px solid var(--border2);border-radius:4px;margin-top:6px;">
+            Partial match: <strong>xK9mQ2</strong> — use <code style="color:var(--accent)">getByText(/xK9mQ2/)</code> regex.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <span class="card-label">CSS & XPath Targets</span>
+      <div class="grid-3">
+        <div id="css-by-id" data-testid="css-by-id" style="padding:10px 12px;background:var(--surface2);border-radius:4px;font-size:12px;">#css-by-id — target by ID</div>
+        <div class="css-by-class unique-class-name" data-testid="css-by-class" style="padding:10px 12px;background:var(--surface2);border-radius:4px;font-size:12px;">.unique-class-name — by class</div>
+        <div data-custom="pw-test-attr" data-testid="css-by-attr" style="padding:10px 12px;background:var(--surface2);border-radius:4px;font-size:12px;">[data-custom="pw-test-attr"]</div>
+        <div style="padding:10px 12px;background:var(--surface2);border-radius:4px;font-size:12px;" data-testid="nth-child-target">nth-child(1) target</div>
+        <div style="padding:10px 12px;background:var(--surface2);border-radius:4px;font-size:12px;" data-testid="nth-child-target-2">nth-child(2) target</div>
+        <div style="padding:10px 12px;background:var(--surface2);border-radius:4px;font-size:12px;" data-testid="nth-child-target-3">nth-child(3) target</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════════
+       15 — MISC FEATURES
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sec-misc">
+    <div class="section-header">
+      <span class="section-num">15</span>
+      <h2 class="section-title">Miscellaneous Features</h2>
+      <span class="section-tag">animations · geolocation · clipboard · print · media · resize</span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <span class="card-label">CSS Animations</span>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+          <div style="text-align:center;">
+            <div class="anim-box anim-spin" data-testid="anim-spin">⚙️</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:6px;">spin</div>
+          </div>
+          <div style="text-align:center;">
+            <div class="anim-box anim-pulse" style="background:var(--accent)" data-testid="anim-pulse">💚</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:6px;">pulse</div>
+          </div>
+          <div style="text-align:center;">
+            <div class="anim-box anim-bounce" style="background:var(--accent3)" data-testid="anim-bounce">⬆️</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:6px;">bounce</div>
+          </div>
+          <div style="text-align:center;">
+            <div class="anim-box anim-shake" style="background:var(--accent4)" data-testid="anim-shake">🔔</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:6px;">shake</div>
+          </div>
+          <div style="text-align:center;">
+            <div class="anim-box anim-blink" style="background:var(--pink)" data-testid="anim-blink">✨</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:6px;">blink</div>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn btn-outline btn-sm" onclick="document.querySelectorAll('.anim-box').forEach(e=>e.style.animationPlayState='paused')" data-testid="btn-pause-anim">Pause All</button>
+          <button class="btn btn-outline btn-sm" onclick="document.querySelectorAll('.anim-box').forEach(e=>e.style.animationPlayState='running')" data-testid="btn-play-anim">Play All</button>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-label">Tooltips</span>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" data-tooltip="I'm a tooltip above!" data-testid="tooltip-btn-1">Hover me</button>
+          <button class="btn btn-primary btn-sm" data-tooltip="Playwright can find tooltip text" data-testid="tooltip-btn-2">Tooltip 2</button>
+          <button class="btn btn-amber btn-sm" data-tooltip="Use getByRole('tooltip') or check aria-describedby" data-testid="tooltip-btn-3">Tooltip 3</button>
+        </div>
+        <span class="card-label" style="margin-top:14px;">Resizable Element</span>
+        <div class="resizable" id="resizable-box" data-testid="resizable-box">Drag corner to resize (CSS resize: both)</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Clipboard API</span>
+        <div class="btn-row" style="flex-direction:column;gap:8px;align-items:flex-start;">
+          <button id="btn-copy" class="btn btn-outline btn-sm" data-testid="btn-copy" onclick="copyToClipboard()">Copy text to clipboard</button>
+          <button id="btn-paste" class="btn btn-outline btn-sm" data-testid="btn-paste" onclick="pasteFromClipboard()">Paste from clipboard</button>
+          <input type="text" id="clipboard-target" data-testid="clipboard-target" placeholder="Paste result appears here…" style="width:100%;margin-top:4px;">
+        </div>
+        <div class="output-box" id="clipboard-out">—</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Geolocation (requires permission)</span>
+        <button id="btn-geo" class="btn btn-blue btn-sm" data-testid="btn-geo" onclick="getGeo()">Get Location</button>
+        <div id="geo-output" style="margin-top:10px;">Click to request geolocation…</div>
+      </div>
+      <div class="card">
+        <span class="card-label">Media Elements</span>
+        <span class="card-label">Audio</span>
+        <audio controls data-testid="audio-player" style="width:100%;height:36px;">
+          <source src="https://www.w3schools.com/html/horse.ogg" type="audio/ogg">
+          Your browser does not support audio.
+        </audio>
+        <span class="card-label" style="margin-top:12px;">Video</span>
+        <video controls data-testid="video-player" height="120" style="width:100%;border-radius:6px;">
+          <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+          Your browser does not support video.
+        </video>
+      </div>
+      <div class="card">
+        <span class="card-label">Print / Window Events</span>
+        <div class="btn-row" style="flex-direction:column;gap:8px;align-items:flex-start;">
+          <button id="btn-print" class="btn btn-outline btn-sm" data-testid="btn-print" onclick="window.print()">window.print()</button>
+          <button id="btn-focus" class="btn btn-outline btn-sm" data-testid="btn-focus" onclick="window.focus()">window.focus()</button>
+          <button id="btn-blur" class="btn btn-outline btn-sm" data-testid="btn-blur" onclick="window.blur()">window.blur()</button>
+          <button id="btn-scroll-top" class="btn btn-outline btn-sm" data-testid="btn-scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">Scroll to top</button>
+          <button id="btn-scroll-bottom" class="btn btn-outline btn-sm" data-testid="btn-scroll-bottom" onclick="window.scrollTo({top:99999,behavior:'smooth'})">Scroll to bottom</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POPUP / NEW TAB -->
+    <div class="card" style="margin-top:16px;">
+      <span class="card-label">Popup / New Tab — <code>page.waitForEvent('popup')</code></span>
+      <div class="btn-row">
+        <a id="link-popup" href="https://example.com" target="_blank" class="btn btn-outline btn-sm" data-testid="link-popup" rel="noopener">Open popup (example.com)</a>
+        <button id="btn-popup" class="btn btn-outline btn-sm" data-testid="btn-popup" onclick="window.open('https://playwright.dev','_blank','width=800,height=600')">window.open() popup</button>
+        <button id="btn-same-tab" class="btn btn-outline btn-sm" data-testid="btn-same-tab" onclick="showOutput('popup-out','same-tab navigation triggered')">Same-tab nav</button>
+      </div>
+      <div class="output-box" id="popup-out">—</div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function showOutput(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function toast(msg, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type === 'error' ? 'error' : type === 'warning' ? 'warning' : '');
+  t.innerHTML = `<span>${msg}</span><span style="cursor:pointer;color:var(--muted)" onclick="this.parentElement.remove()">✕</span>`;
+  container.appendChild(t);
+  setTimeout(() => { t.style.animation = 'toastOut 0.3s ease forwards'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open')); });
+document.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); });
+
+// ═══════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════
+function logClick(id, msg) { showOutput(id, msg + ' — ' + new Date().toLocaleTimeString()); }
+
+// ═══════════════════════════════════════════
+// CLICKS / COUNTER
+// ═══════════════════════════════════════════
+let counterVal = 0;
+function updateCounter(delta, reset) {
+  if (reset) counterVal = 0;
+  else counterVal += delta;
+  document.getElementById('counter-val').textContent = counterVal;
+}
+
+function handleRightClick(e) {
+  e.preventDefault();
+  showOutput('rclick-out', 'contextmenu at (' + e.clientX + ', ' + e.clientY + ')');
+  const ctx = document.getElementById('custom-ctx');
+  ctx.style.left = e.clientX + 'px';
+  ctx.style.top = e.clientY + 'px';
+  ctx.style.display = 'block';
+}
+function ctxAction(name) {
+  showOutput('rclick-out', 'Context action: ' + name);
+  document.getElementById('custom-ctx').style.display = 'none';
+}
+document.addEventListener('click', () => { document.getElementById('custom-ctx').style.display = 'none'; });
+
+// ═══════════════════════════════════════════
+// FORMS
+// ═══════════════════════════════════════════
+document.getElementById('chk-indeterminate').indeterminate = true;
+
+function handleFormSubmit(e) {
+  e.preventDefault();
+  const u = document.getElementById('form-username').value;
+  const p = document.getElementById('form-pass').value;
+  showOutput('form-out', u ? '✓ Submitted: ' + u : '✗ Username required');
+  if (u) toast('Form submitted for: ' + u, 'success');
+}
+
+// ═══════════════════════════════════════════
+// KEYBOARD
+// ═══════════════════════════════════════════
+const keyInput = document.getElementById('key-input');
+const keyLog = document.getElementById('key-log');
+const keyDisplay = document.getElementById('key-display');
+
+keyInput.addEventListener('keydown', e => {
+  keyDisplay.textContent = [e.ctrlKey&&'Ctrl', e.shiftKey&&'Shift', e.altKey&&'Alt', e.metaKey&&'Meta', e.key].filter(Boolean).join(' + ');
+  const line = document.createElement('div');
+  line.textContent = '↓ ' + e.key + (e.ctrlKey?' [ctrl]':'') + (e.shiftKey?' [shift]':'');
+  line.style.color = 'var(--accent3)';
+  keyLog.insertBefore(line, keyLog.firstChild);
+  if (keyLog.children.length > 10) keyLog.lastChild.remove();
+});
+
+const shortcutZone = document.getElementById('shortcut-zone');
+shortcutZone.addEventListener('keydown', e => {
+  let combo = [];
+  if (e.ctrlKey || e.metaKey) combo.push('Ctrl');
+  if (e.shiftKey) combo.push('Shift');
+  if (e.altKey) combo.push('Alt');
+  combo.push(e.key);
+  showOutput('shortcut-out', combo.join('+'));
+  e.preventDefault();
+});
+
+document.getElementById('special-keys-area').addEventListener('keydown', e => {
+  showOutput('special-key-out', 'key: ' + e.key + ' | code: ' + e.code);
+});
+
+const imeInput = document.getElementById('ime-input');
+imeInput.addEventListener('compositionstart', () => showOutput('ime-output', 'compositionstart'));
+imeInput.addEventListener('compositionupdate', e => showOutput('ime-output', 'compositionupdate: ' + e.data));
+imeInput.addEventListener('compositionend', e => showOutput('ime-output', 'compositionend: ' + e.data));
+imeInput.addEventListener('input', e => { if (!e.isComposing) showOutput('ime-output', 'input: ' + imeInput.value); });
+
+// ═══════════════════════════════════════════
+// MOUSE / DRAG
+// ═══════════════════════════════════════════
+let dragItem = null;
+function handleDragStart(e, name) {
+  dragItem = name;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.setData('text/plain', name);
+}
+function handleDragEnd(e) { e.currentTarget.classList.remove('dragging'); }
+
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const name = e.dataTransfer.getData('text/plain');
+  const el = document.createElement('div');
+  el.className = 'drag-source';
+  el.style.cursor = 'default';
+  el.textContent = '✓ ' + name;
+  el.style.borderColor = 'var(--accent)';
+  const ph = dropZone.querySelector('.placeholder');
+  if (ph) ph.remove();
+  dropZone.appendChild(el);
+  showOutput('drag-out', name + ' dropped!');
+});
+
+function handleWheel(e) {
+  e.preventDefault();
+  showOutput('wheel-out', 'deltaX:' + e.deltaX.toFixed(0) + ' deltaY:' + e.deltaY.toFixed(0));
+}
+
+// ═══════════════════════════════════════════
+// DIALOGS
+// ═══════════════════════════════════════════
+function showAlert() { alert('This is an alert! Use page.on("dialog", d => d.accept()) in Playwright.'); showOutput('dialog-out','alert dismissed'); }
+function showConfirm() { const r = confirm('Confirm this action?'); showOutput('dialog-out', 'confirm returned: ' + r); }
+function showPrompt() { const r = prompt('Enter your name:','Playwright'); showOutput('dialog-out', 'prompt returned: ' + (r||'null')); }
+
+// ═══════════════════════════════════════════
+// WAIT / ASYNC
+// ═══════════════════════════════════════════
+function revealDelayed() {
+  document.getElementById('btn-reveal').disabled = true;
+  document.getElementById('reveal-spinner').style.display = 'flex';
+  document.getElementById('delayed-element').style.display = 'none';
+  setTimeout(() => {
+    document.getElementById('reveal-spinner').style.display = 'none';
+    document.getElementById('delayed-element').style.display = 'block';
+    document.getElementById('btn-reveal').disabled = false;
+  }, 2000);
+}
+
+function startProgress() {
+  let pct = 0;
+  document.getElementById('progress-done').style.display = 'none';
+  const fill = document.getElementById('prog-fill');
+  const val = document.getElementById('prog-val');
+  document.getElementById('btn-progress').disabled = true;
+  const iv = setInterval(() => {
+    pct += Math.random() * 12;
+    if (pct >= 100) { pct = 100; clearInterval(iv); document.getElementById('progress-done').style.display='block'; document.getElementById('btn-progress').disabled = false; }
+    fill.style.width = pct + '%';
+    val.textContent = Math.round(pct) + '%';
+  }, 200);
+}
+
+function showSkeleton() {
+  document.getElementById('skeleton-content').style.display = 'none';
+  document.getElementById('skeleton-container').style.display = 'block';
+  document.getElementById('btn-skeleton').disabled = true;
+  setTimeout(() => {
+    document.getElementById('skeleton-container').style.display = 'none';
+    document.getElementById('skeleton-content').style.display = 'block';
+    document.getElementById('btn-skeleton').disabled = false;
+  }, 2200);
+}
+
+let stateDisabled = false;
+function toggleButtonState() {
+  stateDisabled = !stateDisabled;
+  const btn = document.getElementById('state-target-btn');
+  btn.disabled = stateDisabled;
+  showOutput('state-out', 'Button is now: ' + (stateDisabled ? 'disabled' : 'enabled'));
+}
+
+let textToggle = 0;
+const textOptions = ['Initial text content', 'Text was changed!', 'Changed again — unique string', 'Back to a different state'];
+function changeText() { textToggle = (textToggle+1)%textOptions.length; document.getElementById('dynamic-text').textContent = textOptions[textToggle]; }
+
+function randomSuccess() {
+  const ok = Math.random() > 0.5;
+  document.getElementById('success-box').style.display = ok ? 'block' : 'none';
+  document.getElementById('fail-box').style.display = ok ? 'none' : 'block';
+}
+
+// ═══════════════════════════════════════════
+// NETWORK
+// ═══════════════════════════════════════════
+function logNet(method, url, status, ok) {
+  const log = document.getElementById('net-log');
+  const div = document.createElement('div');
+  div.className = 'net-entry';
+  div.innerHTML = `<span class="method">${method}</span> <span class="url">${url.split('/').slice(-2).join('/')}</span> → <span class="status${ok?'':' err'}">${status}</span>`;
+  log.insertBefore(div, log.firstChild);
+  if (log.children.length > 12) log.lastChild.remove();
+}
+
+async function makeRequest(method, url, body) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(url, opts);
+    const data = await res.json().catch(() => ({}));
+    logNet(method, url, res.status, res.ok);
+    document.getElementById('response-data').innerHTML = `<span style="color:var(--accent3)">${res.status} ${res.statusText}</span>\n` + JSON.stringify(data, null, 2).replace(/</g,'&lt;');
+  } catch(e) {
+    logNet(method, url, 'ERR', false);
+    document.getElementById('response-data').textContent = 'Error: ' + e.message;
+  }
+}
+
+async function makeMockableRequest() {
+  document.getElementById('mock-indicator').textContent = 'fetching…';
+  try {
+    const res = await fetch('https://jsonplaceholder.typicode.com/users/1');
+    const d = await res.json();
+    document.getElementById('mock-indicator').textContent = '✓ Got: ' + d.name;
+  } catch(e) {
+    document.getElementById('mock-indicator').textContent = '✗ ' + e.message;
+  }
+}
+
+// WS simulation
+let wsTimer = null;
+let wsConnected = false;
+function wsLog(msg, type) {
+  const log = document.getElementById('ws-log');
+  const div = document.createElement('div');
+  div.className = 'ws-msg ' + type;
+  div.textContent = new Date().toLocaleTimeString() + '  ' + msg;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+function wsConnect() {
+  wsConnected = true;
+  document.getElementById('ws-connect').disabled = true;
+  document.getElementById('ws-disconnect').disabled = false;
+  document.getElementById('ws-send').disabled = false;
+  wsLog('Connected to mock WebSocket server', 'sys');
+  wsTimer = setInterval(() => {
+    if (wsConnected) wsLog('← server: ping ' + Date.now(), 'recv');
+  }, 3000);
+}
+function wsDisconnect() {
+  wsConnected = false;
+  clearInterval(wsTimer);
+  document.getElementById('ws-connect').disabled = false;
+  document.getElementById('ws-disconnect').disabled = true;
+  document.getElementById('ws-send').disabled = true;
+  wsLog('Disconnected', 'sys');
+}
+function wsSend() {
+  const val = document.getElementById('ws-msg-input').value;
+  if (!val) return;
+  wsLog('→ client: ' + val, 'sent');
+  document.getElementById('ws-msg-input').value = '';
+  setTimeout(() => wsLog('← server: echo ' + val, 'recv'), 400);
+}
+
+// ═══════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════
+function lsSet() {
+  const k = document.getElementById('ls-key').value;
+  const v = document.getElementById('ls-val').value;
+  if (!k) return;
+  localStorage.setItem(k, v);
+  showOutput('ls-out', 'Set: ' + k + ' = ' + v);
+  renderLS();
+}
+function lsGet() {
+  const k = document.getElementById('ls-key').value;
+  const v = localStorage.getItem(k);
+  showOutput('ls-out', k + ' = ' + (v !== null ? v : '(not found)'));
+}
+function lsClear() { localStorage.clear(); showOutput('ls-out', 'Cleared all'); renderLS(); }
+function renderLS() {
+  const d = document.getElementById('ls-display');
+  d.innerHTML = '';
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    const row = document.createElement('div'); row.className = 'kv-pair';
+    row.innerHTML = `<span class="kv-key">${k}</span><span class="kv-val">${localStorage.getItem(k)}</span>`;
+    d.appendChild(row);
+  }
+}
+function ssSet() {
+  const k = document.getElementById('ss-key').value, v = document.getElementById('ss-val').value;
+  if (!k) return; sessionStorage.setItem(k, v); showOutput('ss-out', 'Set: '+k+' = '+v);
+}
+function ssGet() {
+  const k = document.getElementById('ss-key').value;
+  showOutput('ss-out', k + ' = ' + (sessionStorage.getItem(k) || '(not found)'));
+}
+function ssClear() { sessionStorage.clear(); showOutput('ss-out','Cleared all'); }
+function ckSet() {
+  const n = document.getElementById('ck-name').value, v = document.getElementById('ck-val').value;
+  if (!n) return;
+  document.cookie = n+'='+v+'; path=/; SameSite=Lax';
+  showOutput('ck-out', 'Set cookie: '+n+'='+v);
+}
+function ckRead() { showOutput('ck-out', document.cookie || '(no cookies)'); }
+function ckDelete() {
+  const n = document.getElementById('ck-name').value;
+  if (!n) return;
+  document.cookie = n+'=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+  showOutput('ck-out', 'Deleted: '+n);
+}
+
+// ═══════════════════════════════════════════
+// SCROLL & LISTS
+// ═══════════════════════════════════════════
+(function initScrollContainer() {
+  const c = document.getElementById('scroll-container');
+  for (let i = 1; i <= 30; i++) {
+    const d = document.createElement('div');
+    d.className = 'scroll-item';
+    d.id = 'scroll-item-' + i;
+    d.dataset.testid = 'scroll-item-' + i;
+    d.textContent = 'Item #' + i + ' — scroll target';
+    if (i % 5 === 0) d.style.color = 'var(--accent)';
+    c.appendChild(d);
+  }
+})();
+
+(function initInfiniteScroll() {
+  let page = 0;
+  const list = document.getElementById('infinite-list');
+  const loader = document.getElementById('inf-loader');
+  function loadMore() {
+    loader.textContent = 'Loading…';
+    setTimeout(() => {
+      for (let i = 1; i <= 8; i++) {
+        const idx = page * 8 + i;
+        const d = document.createElement('div');
+        d.className = 'inf-item';
+        d.dataset.testid = 'inf-item-' + idx;
+        d.innerHTML = `<span>Row ${idx} — <span style="color:var(--muted)">page ${page+1}</span></span><span style="color:var(--accent3);font-size:10px;">#${idx}</span>`;
+        list.insertBefore(d, loader);
+      }
+      page++;
+      loader.textContent = page < 5 ? '— scroll for more —' : '— end of list —';
+    }, 600);
+  }
+  list.addEventListener('scroll', () => {
+    if (list.scrollTop + list.clientHeight >= list.scrollHeight - 20 && page < 5) loadMore();
+  });
+  loadMore();
+})();
+
+(function initLazyCards() {
+  const container = document.getElementById('lazy-cards-container');
+  const names = ['Revenue', 'Users', 'Sessions', 'Bounce Rate', 'Conversions', 'Avg Duration'];
+  const vals = ['$42,800', '12,440', '28,901', '34.2%', '3.8%', '2m 41s'];
+  for (let i = 0; i < 6; i++) {
+    const card = document.createElement('div');
+    card.className = 'lazy-card';
+    card.dataset.testid = 'lazy-card-' + i;
+    card.innerHTML = `<div class="lazy-label">${names[i]}</div><div class="lazy-val">${vals[i]}</div>`;
+    container.appendChild(card);
+  }
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.2 });
+  container.style.display = 'grid';
+  container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(140px, 1fr))';
+  container.style.gap = '12px';
+  document.querySelectorAll('.lazy-card').forEach(c => obs.observe(c));
+})();
+
+// ═══════════════════════════════════════════
+// VISIBILITY
+// ═══════════════════════════════════════════
+const visState = {};
+function toggleVis(id, type) {
+  const el = document.getElementById(id);
+  if (!visState[type]) visState[type] = false;
+  visState[type] = !visState[type];
+  if (type === 'display') el.style.display = visState[type] ? 'none' : 'block';
+  if (type === 'visibility') el.style.visibility = visState[type] ? 'hidden' : 'visible';
+  if (type === 'opacity') el.style.opacity = visState[type] ? '0' : '1';
+  showOutput('vis-out', type + ': ' + (visState[type] ? 'hidden' : 'visible'));
+}
+function toggleAria(el) {
+  const checked = el.getAttribute('aria-checked') === 'true';
+  el.setAttribute('aria-checked', String(!checked));
+  el.textContent = 'aria checkbox: ' + (!checked ? 'checked' : 'unchecked');
+}
+
+// ═══════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════
+function switchTab(tabId, containerId) {
+  const container = document.getElementById(containerId);
+  container.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const pane = container.querySelector('[data-tab="'+tabId+'"]');
+  if (pane) pane.classList.add('active');
+  const btn = document.querySelector('[data-testid="'+tabId+'"]');
+  if (btn) btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// ACCORDION
+// ═══════════════════════════════════════════
+function toggleAccordion(id) {
+  const item = document.getElementById(id);
+  item.classList.toggle('open');
+}
+
+// ═══════════════════════════════════════════
+// TABLE
+// ═══════════════════════════════════════════
+const statuses = ['PASS','FAIL','SKIP','FLAKY'];
+const colors = { PASS:'var(--green)', FAIL:'var(--accent4)', SKIP:'var(--muted)', FLAKY:'var(--accent3)' };
+let rowCount = 0;
+function addTableRow() {
+  rowCount++;
+  const tbody = document.getElementById('table-body');
+  const tr = document.createElement('tr');
+  tr.dataset.testid = 'table-row-' + rowCount;
+  const st = statuses[Math.floor(Math.random()*statuses.length)];
+  tr.innerHTML = `
+    <td>#${rowCount}</td>
+    <td>test_${String(rowCount).padStart(3,'0')}_example</td>
+    <td><span style="color:${colors[st]};font-weight:600;">${st}</span></td>
+    <td>${(Math.random()*3+0.1).toFixed(2)}s</td>
+    <td><button class="btn btn-outline btn-sm" onclick="this.closest('tr').remove()">Delete</button></td>
+  `;
+  tbody.appendChild(tr);
+}
+function clearTable() { document.getElementById('table-body').innerHTML = ''; rowCount = 0; }
+for (let i = 0; i < 5; i++) addTableRow();
+
+// ═══════════════════════════════════════════
+// SHADOW DOM
+// ═══════════════════════════════════════════
+const host = document.getElementById('shadow-host');
+const shadow = host.attachShadow({ mode: 'open' });
+shadow.innerHTML = `
+  <style>
+    :host { display: block; font-family: 'JetBrains Mono', monospace; }
+    .shadow-label { font-size: 10px; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: block; }
+    input { background: #181c24; border: 1px solid #2d3548; color: #e2e8f0; padding: 7px 12px; border-radius: 4px; font-family: inherit; font-size: 12px; outline: none; width: 200px; margin-right: 8px; }
+    input:focus { border-color: #7c3aed; }
+    button { background: #7c3aed; border: none; color: #fff; padding: 7px 14px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 700; }
+    #shadow-out { color: #7c3aed; font-size: 11px; margin-top: 8px; }
+  </style>
+  <span class="shadow-label">Inside Shadow DOM — use locator().shadow() or piercing CSS selectors</span>
+  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
+    <input id="shadow-input" data-testid="shadow-input" placeholder="Type inside shadow DOM…">
+    <button id="shadow-btn" data-testid="shadow-btn" onclick="document.getElementById('shadow-out').textContent='Shadow button clicked! Value: '+document.getElementById('shadow-input').value">Submit</button>
+  </div>
+  <div id="shadow-out">—</div>
+`;
+
+// ═══════════════════════════════════════════
+// CANVAS
+// ═══════════════════════════════════════════
+const canvas = document.getElementById('draw-canvas');
+const ctx = canvas.getContext('2d');
+let painting = false;
+ctx.strokeStyle = '#00d4aa';
+ctx.lineWidth = 2.5;
+ctx.lineCap = 'round';
+ctx.lineJoin = 'round';
+
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return { x: clientX - r.left, y: clientY - r.top };
+}
+canvas.addEventListener('mousedown', e => { painting = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+canvas.addEventListener('mousemove', e => { if (!painting) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+canvas.addEventListener('mouseup', () => painting = false);
+canvas.addEventListener('mouseleave', () => painting = false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); painting = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!painting) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+canvas.addEventListener('touchend', () => painting = false);
+document.getElementById('canvas-color').addEventListener('input', e => { ctx.strokeStyle = e.target.value; });
+function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+// ═══════════════════════════════════════════
+// CLIPBOARD
+// ═══════════════════════════════════════════
+async function copyToClipboard() {
+  const text = 'Playwright clipboard test — ' + Date.now();
+  try {
+    await navigator.clipboard.writeText(text);
+    showOutput('clipboard-out', '✓ Copied: ' + text);
+    toast('Copied to clipboard!', 'success');
+  } catch(e) {
+    showOutput('clipboard-out', '✗ ' + e.message + ' (requires HTTPS / permission)');
+  }
+}
+async function pasteFromClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    document.getElementById('clipboard-target').value = text;
+    showOutput('clipboard-out', '✓ Pasted: ' + text);
+  } catch(e) {
+    showOutput('clipboard-out', '✗ ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════
+// GEOLOCATION
+// ═══════════════════════════════════════════
+function getGeo() {
+  const out = document.getElementById('geo-output');
+  out.textContent = 'Requesting…';
+  navigator.geolocation.getCurrentPosition(
+    pos => { out.innerHTML = `<span style="color:var(--accent)">lat: ${pos.coords.latitude.toFixed(4)}<br>lng: ${pos.coords.longitude.toFixed(4)}<br>accuracy: ${pos.coords.accuracy}m</span>`; },
+    err => { out.innerHTML = `<span style="color:var(--accent4)">${err.message}</span><br><span style="color:var(--muted);font-size:11px;">Use page.context().setGeolocation() in Playwright</span>`; }
+  );
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+renderLS();
+// seed localStorage
+localStorage.setItem('pw-test-key', 'playwright-value');
+localStorage.setItem('session-id', 'abc123');
+renderLS();
+
+// Trigger some initial toasts
+setTimeout(() => toast('Playwright Testground loaded ✓', 'success'), 800);
+</script>
+</body>
+</html>
